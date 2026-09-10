@@ -106,6 +106,26 @@ O projeto se chamava **content-ops**; foi renomeado para **storydesk**. Se você
 | estado `~/.content-ops/` | `~/.storydesk/` (copiado automaticamente na 1ª execução) |
 | variável `CONTENT_OPS_HOME` | `STORYDESK_HOME` |
 
+## Customizando seus tópicos
+
+O `plan` sugere posts com base em tópicos configuráveis. Por padrão vem neutro
+(Devlog, Descobertas, Automação, Segurança) — personalize com os SEUS projetos
+em `~/.storydesk/config.json`:
+
+```json
+{
+  "topics": [
+    {"project": "meublog", "label": "Meu Blog", "icon": "📝",
+     "pitch": "Do que é o seu projeto."},
+    {"project": "estudos", "label": "Estudos", "icon": "📚",
+     "pitch": "O que você está aprendendo."}
+  ]
+}
+```
+
+O anti-repetição usa a memória editorial: quanto menos cobertura um tópico tem,
+mais cedo ele volta à fila.
+
 ## Evolução planejada
 
 - MCP server (`hermes-storydesk-mcp`) expondo as mesmas tools

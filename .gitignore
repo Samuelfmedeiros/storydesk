@@ -1,0 +1,10 @@
+# estado local do agente (nunca versionar)
+.ai-jail/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+.DS_Store

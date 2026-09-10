@@ -3,27 +3,29 @@ from datetime import datetime
 
 from .daylog import recent
 from .memory import covered_projects, published_slugs
+from .state import get_config
 
 
-# Projetos conhecidos do ecossistema Samuel (vira config no adapter genérico)
+# Tópicos padrão (neutros). Personalize com seus projetos em
+# ~/.storydesk/config.json -> {"topics": [{"project", "label", "icon", "pitch"}]}
 DEFAULT_TOPICS = [
-    {"project": "lifelog", "label": "LifeLog", "icon": "📖",
-     "pitch": "A história do LifeLog — o blog pessoal que virou sistema de conteúdo."},
-    {"project": "dogwalk", "label": "Dogwalk", "icon": "🐶",
-     "pitch": "A história do Dogwalk/PataPass — marketplace de pets com Stripe Connect."},
-    {"project": "arachne", "label": "Arachne", "icon": "🕷️",
-     "pitch": "A história do Arachne — scraping + RAG, MCP, browser agent."},
-    {"project": "capivara", "label": "Capivara", "icon": "🐹",
-     "pitch": "A história do Capivara — hub pessoal, RAG local, 2FA, dashboard honesto."},
-    {"project": "portfolio", "label": "Portfolio", "icon": "🚀",
-     "pitch": "A história do Portifólio Samuel — cockpit sci-fi, 5 mini-games, blog sync."},
-    {"project": "tatuengine", "label": "TatuEngine", "icon": "🌊",
-     "pitch": "A história do TatuEngine — wave field theory, agente autopoiético."},
+    {"project": "devlog", "label": "Devlog", "icon": "🛠️",
+     "pitch": "O que estou construindo agora — decisões, betes e progresso."},
     {"project": "descobertas", "label": "Descobertas", "icon": "💡",
-     "pitch": "Descobertas técnicas — ferramentas, estudos e lições aprendidas."},
+     "pitch": "Ferramentas, estudos e lições aprendidas."},
+    {"project": "automacao", "label": "Automação", "icon": "🤖",
+     "pitch": "Automação, agentes e integrações que economizam horas."},
     {"project": "seguranca", "label": "Segurança", "icon": "🔒",
-     "pitch": "Segurança — ai-jail, CSP, rate limit, bug hunter, hardening."},
+     "pitch": "Hardening, rate limit, CSP e lições de defesa."},
 ]
+
+
+def get_topics() -> list[dict]:
+    """Tópicos do usuário (config.json) ou os padrões neutros."""
+    topics = get_config().get("topics")
+    if isinstance(topics, list) and topics:
+        return topics
+    return DEFAULT_TOPICS
 
 
 def suggest(count: int = 3) -> list[dict]:
@@ -37,7 +39,7 @@ def suggest(count: int = 3) -> list[dict]:
 
     # Projetos por cobertura (menos coberto primeiro)
     scored = []
-    for t in DEFAULT_TOPICS:
+    for t in get_topics():
         n = len(covered.get(t["project"], []))
         scored.append((n, t))
     scored.sort(key=lambda x: x[0])
@@ -64,7 +66,7 @@ def suggest(count: int = 3) -> list[dict]:
 
 def weekly_grid(base_date: str = "2026-07-24", projects=None) -> list[dict]:
     """Grade cíclica semanal: índice do dia = (hoje - base).days % len(projetos)."""
-    topics = projects or [t["project"] for t in DEFAULT_TOPICS]
+    topics = projects or [t["project"] for t in get_topics()]
     today = datetime.now().date()
     base = datetime.strptime(base_date, "%Y-%m-%d").date()
     idx = (today - base).days % len(topics)
