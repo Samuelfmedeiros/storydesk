@@ -8,7 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from content_ops.adapter import ContentAdapter
+from storydesk.adapter import ContentAdapter
 
 
 class LifelogAdapter(ContentAdapter):
@@ -83,7 +83,7 @@ class LifelogAdapter(ContentAdapter):
         if r.returncode != 0:
             return False
         r = subprocess.run(
-            ["git", "commit", "-m", f"feat(post): {slug} [content-ops]"],
+            ["git", "commit", "-m", f"feat(post): {slug} [storydesk]"],
             cwd=self.repo, capture_output=True, text=True)
         if r.returncode != 0:
             return False

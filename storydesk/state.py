@@ -1,19 +1,33 @@
-"""Estado e config do content-ops — ~/.content-ops/ (JSON, sem secrets)."""
+"""Estado e config do storydesk — ~/.storydesk/ (JSON, sem secrets)."""
 import json
 import os
 from pathlib import Path
 
-CONFIG_DIR = Path(os.environ.get("CONTENT_OPS_HOME", Path.home() / ".content-ops"))
+CONFIG_DIR = Path(os.environ.get("STORYDESK_HOME", Path.home() / ".storydesk"))
 CONFIG_FILE = CONFIG_DIR / "config.json"
 STATE_FILE = CONFIG_DIR / "state.json"
 DAYLOG_FILE = CONFIG_DIR / "daylog.json"
 
+# Diretório legado (content-ops <= 0.1) — migrado uma única vez
+LEGACY_DIR = Path.home() / ".content-ops"
+
+
+def _migrate_legacy_home():
+    """Copia o estado do content-ops (~/.content-ops) na 1a execução, se existir."""
+    if not LEGACY_DIR.exists() or CONFIG_DIR.exists():
+        return
+    import shutil
+
+    shutil.copytree(LEGACY_DIR, CONFIG_DIR)
+
 
 def ensure_dirs():
+    _migrate_legacy_home()
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_json(path: Path, default):
+    ensure_dirs()  # garante migração do legado também no caminho de leitura
     if not path.exists():
         return default
     try:

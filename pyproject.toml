@@ -1,19 +1,19 @@
 [project]
-name = "content-ops"
-version = "0.1.0"
+name = "storydesk"
+version = "0.2.0"
 description = "Gerenciador, agendador e criador de posts para blogs — narrativo, com memória, curadoria e fallback."
 requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-content-ops = "content_ops.cli:main"
+storydesk = "storydesk.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["content_ops"]
+packages = ["storydesk"]
 
 [tool.setuptools.package-data]
-content_ops = ["py.typed"]
+storydesk = ["py.typed"]

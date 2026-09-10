@@ -1,95 +1,124 @@
-# content-ops
+# Storydesk
 
-Gerenciador, agendador e criador de posts para blogs — narrativo, com memória,
-curadoria, fallback e poucos tokens.
+**Sua mesa de histórias** — transforma o dia a dia em posts de blog.
 
-> **Premissa:** posts são **histórias** (setup → conflito → resolução), como no
-> LifeLog. Registra o dia a dia (`daylog`) como matéria-prima, sugere o que
-> contar sem repetir (memória), gera capa com AI (fallback em cascata) e
-> publica **sempre com aprovação humana**.
+O Storydesk é o estúdio editorial por trás do LifeLog. Você anota o que fez no dia em 10 segundos; ele guarda tudo, lembra o que já foi publicado, sugere a próxima história sem repetir, escreve o rascunho em PT+EN, gera a capa com IA e publica — sempre com sua aprovação.
+
+Python puro, zero dependências, roda da sua máquina.
+
+## O fluxo
+
+```
+daylog (anota o dia)
+   |
+plan (sugere a próxima história, sem repetir)
+   |
+draft (rascunho PT+EN no formato do blog)
+   |
+thumbnail (capa: Cloudflare FLUX -> fallback PIL)
+   |
+publish (build -> sua confirmação -> push -> verify)
+```
 
 ## Instalação
 
-```bash
-# Sem deps (stdlib puro) — basta estar no PATH:
-export PATH="$HOME/projetos/content-ops:$PATH"
-```
-
-## Uso rápido
+Sem dependências — só precisa estar no PATH:
 
 ```bash
-# 1. Vincula um blog (adapter LifeLog é o de referência)
-content-ops init --name lifelog --adapter lifelog --repo ~/projetos/lifelog --url https://lifelog-sepia.vercel.app
-
-# 2. Registra o dia a dia (matéria-prima das histórias)
-content-ops daylog add "Corrigi o rate limit com CF-Connecting-IP"
-content-ops daylog show
-
-# 3. Curadoria — sugere próximos posts (anti-repetição via memória)
-content-ops plan
-
-# 4. Memória editorial
-content-ops memory
-
-# 5. Rascunho PT+EN (o conteúdo narrativo é completado pela AI/skill)
-content-ops draft --slug nova-historia-capivara-2026-08-09 --project capivara --tags '["capivara"]' --icon 🐹
-
-# 6. Capa AI (Cloudflare FLUX → fallback PIL)
-content-ops thumbnail --slug nova-historia-capivara-2026-08-09 --project capivara
-
-# 7. Publica com aprovação (build → confirmar → push → verify)
-content-ops publish --slug nova-historia-capivara-2026-08-09 --project capivara
-
-# 8. Verifica sync com o site
-content-ops verify
+export PATH="$HOME/projetos/storydesk/bin:$PATH"
 ```
 
-## Arquitetura
+Dica: coloque a linha no `~/.bashrc` para valer em toda sessão.
 
+## Comandos
+
+| Comando | O que faz |
+|---|---|
+| `storydesk init` | Vincula um blog (adapter LifeLog é o de referência) |
+| `storydesk daylog add "..."` | Registra uma nota do dia (a matéria-prima) |
+| `storydesk daylog show` | Mostra as notas de hoje |
+| `storydesk plan` | Sugere os próximos posts (anti-repetição via memória) |
+| `storydesk memory` | Mostra o que já foi publicado/coberto |
+| `storydesk draft --slug S` | Gera o rascunho PT+EN |
+| `storydesk thumbnail --slug S` | Gera a capa com IA |
+| `storydesk publish --slug S` | Publica: build, confirmação humana, push, verificação |
+| `storydesk verify` | Confere o sync blog -> site ao vivo |
+
+Exemplo de uma tarde completa:
+
+```bash
+storydesk init --name lifelog --adapter lifelog \
+  --repo ~/projetos/lifelog --url https://lifelog-sepia.vercel.app
+
+storydesk daylog add "Corrigi o rate limit com CF-Connecting-IP"
+storydesk plan
+storydesk draft --slug rate-limit-cf-connecting-ip --project lifelog
+storydesk thumbnail --slug rate-limit-cf-connecting-ip --project lifelog
+storydesk publish --slug rate-limit-cf-connecting-ip --project lifelog
+storydesk verify
 ```
-content-ops/
-├── content_ops/          # Pacote (stdlib puro)
-│   ├── cli.py            # Entrypoint argparse
-│   ├── state.py          # Config/estado JSON em ~/.content-ops/
-│   ├── daylog.py         # Registro do dia a dia
-│   ├── memory.py         # Memória editorial (anti-repetição)
-│   ├── plan.py           # Curadoria + grade cíclica
-│   ├── adapter.py        # Interface genérica de conteúdo
-│   └── thumbnail.py      # Capa AI (FLUX → PIL fallback)
-├── adapters/
-│   └── lifelog.py        # Adapter LifeLog (Astro/MDX, PT+EN)
-├── tests/                # unittest (sem deps)
-└── examples/
-```
+
+## Onde vive o estado
+
+Config, memória editorial e daylog ficam em `~/.storydesk/` (JSON puro):
+
+| Arquivo | Conteúdo |
+|---|---|
+| `config.json` | Blogs vinculados (nome, adapter, repo, URL) |
+| `state.json` | Histórico de publicações e rascunhos |
+| `daylog.json` | Notas do dia a dia |
+
+**Nada disso vai pro repositório** — o repo contém só código.
 
 ## Criando um adapter para outro blog
 
-Qualquer blog/site de notícias implementa `ContentAdapter`:
+Qualquer blog implementa a interface `ContentAdapter`:
 
 ```python
-from content_ops.adapter import ContentAdapter
+from storydesk.adapter import ContentAdapter
 
 class GhostAdapter(ContentAdapter):
     name = "ghost"
-    def init(self, repo_path): ...      # vincula
-    def draft_path(self, slug, lang): ...  # caminho do rascunho
-    def write_draft(self, slug, lang, content): ...  # salva
-    def list_slugs(self): ...           # slugs publicados
-    def build(self): ...                # build
-    def publish(self, slug): ...        # commit/push ou API
+    def init(self, repo_path): ...                    # vincula
+    def draft_path(self, slug, lang): ...             # caminho do rascunho
+    def write_draft(self, slug, lang, content): ...   # salva
+    def list_slugs(self): ...                         # slugs publicados
+    def build(self): ...                              # build
+    def publish(self, slug): ...                      # commit/push ou API
     # verify_live vem pronto (URL + slug no HTML)
 ```
 
 ## Segurança
 
-- Config/estado em `~/.content-ops/` (JSON), **sem secrets no repo**
+- Estado em `~/.storydesk/`, sem secrets no repo
 - `publish` exige confirmação humana (ou `-y` em scripts CI)
-- Thumbnail valida saída local, nunca executa código remoto
-- Nenhuma dependência externa — stdlib + subprocess
+- Capa valida a saída local, nunca executa código remoto
+- Zero dependências: stdlib + subprocess
+
+## Migração do content-ops (v0.2.0)
+
+O projeto se chamava **content-ops**; foi renomeado para **storydesk**. Se você usava a versão antiga:
+
+| Antes | Agora |
+|---|---|
+| comando `content-ops` | `storydesk` (`bin/storydesk`) |
+| pacote `content_ops` | `storydesk` |
+| estado `~/.content-ops/` | `~/.storydesk/` (copiado automaticamente na 1ª execução) |
+| variável `CONTENT_OPS_HOME` | `STORYDESK_HOME` |
 
 ## Evolução planejada
 
-- MCP server (`hermes-content-mcp`) expondo as mesmas tools
+- MCP server (`hermes-storydesk-mcp`) expondo as mesmas tools
 - Adapters: Ghost, WordPress, Astro genérico
 - Agendador: fila com horários (12h/16h) reusando crons
-- Integração com o watchdog LifeLog→Portifólio
+- Integração com o watchdog LifeLog -> Portifólio
+
+## Desenvolvimento
+
+```bash
+# testes (sem deps):
+python3 -m unittest discover -s tests
+
+# rodar direto do repo:
+./bin/storydesk --help
+```

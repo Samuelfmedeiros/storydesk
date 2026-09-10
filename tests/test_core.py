@@ -1,4 +1,4 @@
-"""Testes unitários do content-ops — state, daylog, memory, plan."""
+"""Testes unitários do storydesk — state, daylog, memory, plan."""
 import os
 import sys
 import tempfile
@@ -6,11 +6,11 @@ import unittest
 from pathlib import Path
 
 # Aponta CONTENT_OPS_HOME para um tmp isolado ANTES de importar módulos
-_TMP = tempfile.mkdtemp(prefix="content-ops-test-")
-os.environ["CONTENT_OPS_HOME"] = _TMP
+_TMP = tempfile.mkdtemp(prefix="storydesk-test-")
+os.environ["STORYDESK_HOME"] = _TMP
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from content_ops import daylog, memory, plan, state  # noqa: E402
+from storydesk import daylog, memory, plan, state  # noqa: E402
 
 
 class TestState(unittest.TestCase):

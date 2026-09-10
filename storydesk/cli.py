@@ -1,4 +1,4 @@
-"""CLI do content-ops — entrypoint principal (argparse, sem deps)."""
+"""CLI do storydesk — entrypoint principal (argparse, sem deps)."""
 import argparse
 import json
 import sys
@@ -45,7 +45,7 @@ def cmd_init(args):
 def cmd_daylog(args):
     if args.action == "add":
         if not args.text:
-            print("Uso: content-ops daylog add \"<nota do dia>\"")
+            print("Uso: storydesk daylog add \"<nota do dia>\"")
             return 2
         day = add_note(args.text)
         print(f"📝 Registrado em {day}")
@@ -102,7 +102,7 @@ def cmd_thumbnail(args):
 def _find_blog(cfg, name: str | None):
     blogs = cfg.get("blogs", [])
     if not blogs:
-        print("Nenhum blog vinculado. Rode: content-ops init")
+        print("Nenhum blog vinculado. Rode: storydesk init")
         return None
     if name:
         for b in blogs:
@@ -225,7 +225,7 @@ def cmd_publish(args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="content-ops",
+        prog="storydesk",
         description="Gerenciador, agendador e criador de posts (narrativo, com memória).")
     parser.add_argument("--version", action="version", version=__version__)
     sub = parser.add_subparsers(dest="cmd")

@@ -13,7 +13,7 @@ class ContentAdapter(ABC):
 
     @abstractmethod
     def init(self, repo_path: str) -> bool:
-        """Vincula o content-ops ao repo/blog. Retorna True se ok."""
+        """Vincula o storydesk ao repo/blog. Retorna True se ok."""
 
     @abstractmethod
     def draft_path(self, slug: str, lang: str) -> str:
@@ -40,7 +40,7 @@ class ContentAdapter(ABC):
         import urllib.request
 
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "content-ops/0.1"})
+            req = urllib.request.Request(url, headers={"User-Agent": "storydesk/0.1"})
             with urllib.request.urlopen(req, timeout=15) as resp:
                 html = resp.read().decode("utf-8", errors="replace")
             return slug in html
