@@ -1,0 +1,13 @@
+# ai-jail sandbox configuration
+# https://github.com/akitaonrails/ai-jail
+
+command = ["bash"]
+rw_maps = [
+    "~/.npm",
+    "~/.cache/pnpm",
+    "~/.cache/pip",
+    "~/.cache/uv",
+]
+no_gpu = true
+no_display = true
+no_landlock = true
